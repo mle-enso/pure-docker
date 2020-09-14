@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.mle</groupId>
+    <artifactId>pure-docker</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.28.0</version>
+                <configuration>
+                    <showLogs>false</showLogs>
+                    <verbose>true</verbose>
+                    <removeVolumes>true</removeVolumes>
+                    <allContainers>true</allContainers>
+                    <images>
+                        <image>
+                            <name>mongo</name>
+                            <alias>mongo</alias>
+                            <run>
+                                <ports>
+                                    <port>27017:27017</port>
+                                </ports>
+                            </run>
+                        </image>
+                        <image>
+                            <name>wurstmeister/zookeeper:latest</name>
+                            <alias>zookeeper</alias>
+                            <run>
+                                <ports>
+                                    <port>2181:2181</port>
+                                </ports>
+                            </run>
+                        </image>
+                        <image>
+                            <name>wurstmeister/kafka:1.0.0</name>
+                            <alias>kafka</alias>
+                            <run>
+                                <ports>
+                                    <port>9092:9092</port>
+                                </ports>
+                                <links>
+                                    <link>zookeeper:zookeeper</link>
+                                </links>
+                                <env>
+                                    <KAFKA_ADVERTISED_HOST_NAME>127.0.0.1</KAFKA_ADVERTISED_HOST_NAME>
+                                    <KAFKA_ZOOKEEPER_CONNECT>zookeeper:2181</KAFKA_ZOOKEEPER_CONNECT>
+                                    <KAFKA_CREATE_TOPICS></KAFKA_CREATE_TOPICS>
+                                </env>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-containers</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>remove-containers</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
